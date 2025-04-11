@@ -1,0 +1,28 @@
+{
+  "name": "sodom-monorepo",
+  "version": "0.0.1",
+  "description": "monorepo sodom and idom, languages to manipulate html",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@9.2.0",
+  "engines": {
+    "pnpm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sveltejs/svelte.dev.git"
+  },
+  "scripts": {
+    "check": "pnpm -r check",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "test": "pnpm -r test",
+    "build": "cd ./packages/site-kit && pnpm package && cd ../repl && pnpm package && cd ../../apps/svelte.dev && pnpm build",
+    "changeset:version": "changeset version && pnpm -r generate:version && git add --all",
+    "changeset:publish": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10"
+  }
+}

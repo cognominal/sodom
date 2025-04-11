@@ -1,0 +1,50 @@
+{
+    "name": "@cognominal/sodom",
+    "version": "0.0.1",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "vite build",
+        "preview": "vite preview",
+        "package": "svelte-package",
+        "prepublishOnly": "npm run package",
+        "lint": "prettier --check .",
+        "format": "prettier --write .",
+        "test": "vitest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/cognominal/sodom.git"
+    },
+    "author": "cognominal",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/cognominal/sodom/issues"
+    },
+    "homepage": "https://github.com/cognominal/sodom#readme",
+    "exports": {
+        ".": {
+            "types": "./src/lib/public.d.ts",
+            "svelte": "./src/lib/index.ts",
+            "default": "./src/lib/index.ts"
+        }
+    },
+    "files": [
+        "dist",
+        "!dist/**/*.test.*",
+        "!dist/**/*.spec.*"
+    ],
+    "peerDependencies": {
+        "svelte": "^5.0.0"
+    },
+    "devDependencies": {
+        "@sveltejs/package": "^2.0.0",
+        "@types/jsdom": "^21.1.7",
+        "vitest": "^3.1.1",
+        "vite": "^5.4.11"
+    },
+    "type": "module",
+    "dependencies": {
+        "@rich_harris/svelte-split-pane": "^2.0.0",
+        "jsdom": "^26.0.0"
+    }
+}
