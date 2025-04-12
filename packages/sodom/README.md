@@ -263,9 +263,9 @@ rule divh3 =
 
 <hr>
 
+Note: section very incomplete
 ```sodom
 
-Note: section very incomplete
 
 subst replace-h3-with-details
     $/ = 
@@ -295,7 +295,7 @@ Note : I defined the rules/subst, not the way to use them.
 
 ## wiktionary subsection
 
-A real wiktionary section handled in [processing subsections](#processing-subsections).
+For reference, real wiktionary section handled in [processing subsections](#processing-subsections).
 What follows the div element with class `mw-heading3` is specific to this subsection.
 
 ```html
