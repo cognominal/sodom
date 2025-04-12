@@ -1,45 +1,90 @@
-# DOM tree wrangler
+# `idom` and `sodom` : DOM tree wranglers
 
-Note: Some stuff that is very much in the air are mentionned in `Note: `
+`idom` and `sodom` are a substitute for the mess of awful HTML syntax and DOM API. We trade complications for complexity and borrow conventions from existing languages. See [grok](https://grok.com/share/bGVnYWN5_d2e86913-83a1-475d-b04b-b86b3d33c44a).
 
-It is designed to be (eventually) used by [cognominal/spc-learn](https://github.com/cognominal/spc-learn) to process wiktionary pages. We use that as examples.
-
-This is an informal presentation of 
-* `idom`, a language to create html and 
-* `sodom` to  process html.
-
-Both use [jsdom ](https://github.com/jsdom/jsdom)
+`idom` and `sodom` are languages. `idom` creates a DOM conforming document and  `sodom` processes such documents. `sodom` builds on `idom`. Both use [jsdom ](https://github.com/jsdom/jsdom).
 
 the eponymous exported functions are
 
 ```ts
-    export function idom(s: string) : JSDOM { ... }
-    export function sodom(processed: string, processor: string) : JSDOM { ... }
+    export function idom(s: string, m: DOMInterpolationMap  ) : JSDOM { ... }
+    export function sodom(processed: string, processor: string, m DOMInterpolationMap ) : JSDOM { ... }
+```
+with
+
+```ts
+type DOMInterpolationMap = Map<string, any>;
 ```
 
-`idomStr` amd `sodomStr` are identical but return an html string insteead a value of type JSON.
+`idomStr` amd `sodomStr` are identical to their counterpart without the `Str` suffix, but return an html string insteead a value of type JSDOM.
+
+We use `*dom` (stardom) to denote any of these languages and functions
+
+## Simple examples
+
+### simplest example
+
+TBD
+
+### Interpolation
+
+The presence of a sigil in a `*dom` expression indicates an interpolation.	
+
+In raku spirit, `*dom` interpolation trade lexical complexity for syntactical simplicity. 
+
+```ts
+const map = { '@array': ['a', 'b'] }
+idom( '<div @array' )
+```
+
+will give in html
+
+```html
+<div>a</div>
+<div>b</div>
+```
+
+#### tentative
+
+* $ interpolation of a string
+* % interpolation of element attributes
+* € interpolation of a JSDOM value
+
+How to obtain the € character according to [grok](https://grok.com/chat/a4805baf-30de-4ce3-a793-d65d85f7fc77)
+
+We probably can stack sigils.
+
+
+
+## Notes
+
+Note: Some stuff that is very much in the air are mentionned in `Note: ` sections
+
+Sodom is designed to be (eventually) used by [cognominal/spc-learn](https://github.com/cognominal/spc-learn) to process wiktionary pages. We use that as examples.
+
 
 The module name, `sodom`, is gruesome. That's the point. You will remember it.
 It relies on jsdom which is a server-side module.
 Probably, modulo some change of API, it could be used client side. TBD.
 
+Node: We ignore the problems related to spacing. To go further a better grasping of html and jsdom is necessary
 
-`idom` and `sodom` are a substitute for the mess of awful HTML syntax and DOM API.
+## Motivating example
 
-# motivating example
-
-Below is the screendump of the anglophone wiktionary page
-for [мужества](https://en.wiktionary.org/wiki/%D0%BC%D1%83%D0%B6%D0%B5%D1%81%D1%82%D0%B2%D0%B0) annotated by color rectangles.
-Russian ection is within red, subsections are within blue, edit button are with green.
-See [wiktionary section](#wiktionary-section) for the html code of a subsection.
+Below is the screendump of the anglophone wiktionary page for [мужества](https://en.wiktionary.org/wiki/%D0%BC%D1%83%D0%B6%D0%B5%D1%81%D1%82%D0%B2%D0%B0) annotated by color rectangles. Russian section is within red, subsections are within blue, edit button are with green.
+See [wiktionary section](#wiktionary-section) for the html code of a pronunciation subsection.
 
 
 ![мужества](assets/wikt.png)
 
 We want to: 
 *  keep only the russian section. Code [here](#processing-the-russian-section)
-* replace h3 subsections  by a [details](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details)/summary structure. Code [here].(#processing-subsections) 
-* remove the edit button. Code here.
+* replace h3 subsections  by a [details](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details)/summary structure. Code [here](#processing-subsections) 
+* remove the edit button. Code [here](#processing-edit).
+
+The processed witkionary page now looks like that :
+
+![му́жество](assets/wiktmassaged.png)
 
 
 ## idom, sodom 
@@ -47,7 +92,7 @@ We want to:
 principles:
   * indentation instead of opening and closing tags
   * borrowing from css syntax
-  * boworring from [raku](https://en.wikipedia.org/wiki/Raku_(programming_language)) [sigils](https://andrewshitov.com/2018/10/31/variables-in-perl-6-twigils/) and twigils.
+  * boworring from [raku](https://en.wikipedia.org/wiki/Raku_(programming_language))  rules ideas but for DOM trees instead of mere strings, raku [sigils](https://andrewshitov.com/2018/10/31/variables-in-perl-6-twigils/) and twigils.
   * probably js variable prefixed with a sigil will be interpolated in a sodom
     rule replacement
   * a sodom rule is like a regex subtitution but for a tree
@@ -104,27 +149,30 @@ So `idom` code with text
 The  `idom` code
 
 ```idom
-<div #1 <div #2 # line ending starting by '# ' are comments which are ignored
-<div #3
+<div #1>a <div #2>b # line ending starting by '# ' are comments which are ignored
+<div #3>c
 ```
 
-is equivalent to the following `html` 
+is equivalent to the following `idom` 
 
 ```idom
-<div #1 
-	<div #2  
-<div #3
+<div #1>a
+	<div #2>b  
+<div #3>c
 ``` 
 
 that is to
 
 ```html
-<div id="1">
-	<div id="2">
-<div id="3">  
+<div id="1">a
+	<div id="2"></div>
+</div>
+<div id="3"></div>  
 ```
 
 <hr>
+
+Note: unfinished
 
 In the following, the idom version takes 3 lines but is more readable than the oneliner html or the indented multine `html`
 
@@ -193,8 +241,12 @@ $/russianWitk
 
 #### Processing Edit
 
+A subst without a replacement section deletes the matched part
+
+```idom
 subst supressEditSection
 	<span .mw-editsection
+```
 
 #### Processing subsections
 
