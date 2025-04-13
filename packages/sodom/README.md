@@ -8,7 +8,7 @@ the eponymous exported functions are
 
 ```ts
     export function idom(s: string, m: DOMInterpolationMap  ) : JSDOM { ... }
-    export function sodom(processed: string, processor: string, m DOMInterpolationMap ) : JSDOM { ... }
+    export function sodom(processed: JSDOM | string, processor: string, m DOMInterpolationMap ) : JSDOM { ... }
 ```
 with
 
@@ -34,23 +34,25 @@ In raku spirit, `*dom` interpolation trade lexical complexity for syntactical si
 
 ```ts
 const map = { '@array': ['a', 'b'] }
-idom( '<div @array' )
+idom( '<ul<li @array' )
 ```
 
 will give in html
 
 ```html
-<div>a</div>
-<div>b</div>
+<ul>
+	<li>a</li>
+	<li>b</li>
+</ul>
 ```
 
-#### tentative
+#### tentative sigils for interpolation
 
 * $ interpolation of a string
 * % interpolation of element attributes
 * € interpolation of a JSDOM value
 
-How to obtain the € character according to [grok](https://grok.com/chat/a4805baf-30de-4ce3-a793-d65d85f7fc77)
+How to obtain the € (euro) character according to [grok](https://grok.com/chat/a4805baf-30de-4ce3-a793-d65d85f7fc77)
 
 We probably can stack sigils.
 
@@ -58,7 +60,7 @@ We probably can stack sigils.
 
 ## Notes
 
-Note: Some stuff that is very much in the air are mentionned in `Note: ` sections
+Note: Some stuff that is very much in the air are mentionned in `Note: ` or `## Notes` sections
 
 Sodom is designed to be (eventually) used by [cognominal/spc-learn](https://github.com/cognominal/spc-learn) to process wiktionary pages. We use that as examples.
 
@@ -98,7 +100,7 @@ principles:
   * a sodom rule is like a regex subtitution but for a tree
   * also a sodom rule can be made modular like a raku rule
 
-To avoid confusion, identation is done using tab. Other forms of space are
+To avoid confusion, identation is done using tab of size 4. Other forms of space are
 not allowed for indentation.
 
 ### idom
@@ -110,7 +112,7 @@ A element tag is representated by `<` and the tagname like :
 
 Id and class attributes can be written the css way
 
-non literal characters are character that have special meaning in `dom` or `idom`
+non literal characters are character that have special meaning in `idom` or `sodom`
 like `#`, `*`, `(`, `)` and `<` must be escaped with a `\` 
 
 <hr>
@@ -217,18 +219,20 @@ Its body is a matcher and a replacement separated by `\n\n==>\n\n` in its own li
 #### Processing the russian section
 
 * `*` is not greedy and matches siblings. Note: `.` would match one sibling.
+
+
 * In the match section `$/russianWitk =` sets a capture variable which captures the submatch defined by the ruleexprs  until the next capture variable. In the replacement section, its value is used as replacement
 * `<h2 | $ >` is a tentaive syntax that matches a `h2` element or the end of the JSDOM
 
 
-Note: `(#id == "Russian")` is an expression. Expression are to be specified
+Note: `(#id == "Russian")` is an expression. Not needed here anyway.Expressions are to be specified
 
 ```sodom
 subst RussianSection
     *
 
 $/russianWitk =
-	<h2 (#id == "Russian")
+	<h2 (#Russian)
 	*
 
 	<h2 | $
@@ -239,9 +243,10 @@ $/russianWitk
 
 ```
 
-#### Processing Edit
+#### Processing Edit sections
 
-A subst without a replacement section deletes the matched part
+Applying  `subst` without a replacement section deletes the matched part, here an edit section of a wiktionary page
+which is a `span` element with class `mw-editsection`. That's the stuff within green in the screenshot.
 
 ```idom
 subst supressEditSection
@@ -250,48 +255,67 @@ subst supressEditSection
 
 #### Processing subsections
 
+Still dealing with a wiktionary page,
+We want to replace the `h3` element by a `details` element.
 
+
+In `idom` syntax, here the dom structure we want to match. Extraneous material has been suppressed
+
+
+```idom
+<div<h3 .mw-heading3
+    	summary
+	details
+```
+When stacking tags make sure the tags are aligned with a multiple of 4.
+
+The `€` is used for many things DOM. Maybe a twigil could refine that. Twigils for document, fragments ?
+Server side it means many thing JSdom. Also operators for replacing some DOM API. But here we don't even (explictely)
+use the DOM API.
+
+The match part of the `eplace-h3-with-details` rule mimick the `idom` syntax
+that could have been used to construct the DOM tree to be matched. See below,
+with and without capture variables. The position of the `*` matcher is
+important. The first is below the `<h3` tag *and* indented so it matches
+children The second is not indented relative to `h3` so it matches an array of
+siblings.
+
+Note: the captures for `*` matches are arrays. The `€` sigil is optional. Also unlike raku `$` means scalar
+so  `$summary=*` or $€summary=* would be a mistke.
+
+```sodom
+	<div<h3 .mw-heading3
+			@€summary=*
+  		@€details=*
+```
+	
+```sodom	
+	<div<h3 .mw-heading3
+			*
+  		*
+```
 
 
 ```sodom
-rule divh3 = 
-  <div 
-    <h3 
-	*
-  *
-```
-
-<hr>
-
-Note: section very incomplete
-```sodom
-
-
-subst replace-h3-with-details
-    $/ = 
-        |divh3|
-
-
-        > <divh3$
-    
-    ==>
-    
-    <details
-      <summary
-         $m-divh3
-      Something small enough to escape casual notice.
-    </details>
+rule replace-h3-with-details = 
+	<div<h3 .mw-heading3
+			@€summary=*
+  		@€details=*
+==>
+	<details
+		<summary
+			@€summary
+		@€details
+			
 ```
 
 
-```html
-<details>
-  <summary>Details</summary>
-  Something small enough to escape casual notice.
-</details>
-```
+## Note 
 
-Note : I defined the rules/subst, not the way to use them.
+I defined the rules/subst, not the way to use them, or where to apply them.
+
+** 
+
 
 ## wiktionary subsection
 
